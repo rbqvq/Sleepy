@@ -112,7 +112,8 @@ func GetDeviceState() (using bool, appName string) {
 	}
 
 	windowText := getWindowText(hwnd)
-	if windowText == "" {
+	switch windowText {
+	case "", "Program Manager":
 		return false, ""
 	}
 
