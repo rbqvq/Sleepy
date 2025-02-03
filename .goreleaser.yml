@@ -17,7 +17,7 @@ builds:
   - id: dashboard
     main: ./cmd/sleepy-dashboard
     binary: sleepy-dashboard
-    gobinary: "go"
+    tool: "go"
     flags:
       - -trimpath
     ldflags:
@@ -39,7 +39,7 @@ builds:
   - id: agent
     main: ./cmd/sleepy-agent
     binary: sleepy-agent
-    gobinary: "go"
+    tool: "go"
     flags:
       - -trimpath
     ldflags:
@@ -61,12 +61,12 @@ archives:
   - id: dashboard
     builds:
       - dashboard
-    format: tar.gz
+    formats: ["tar.gz"]
     strip_binary_directory: true
     name_template: '{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
     format_overrides:
       - goos: windows
-        format: zip
+        formats: ["zip"]
     files:
       - README.md
       - systemd/sleepy-dashboard.service
@@ -76,12 +76,12 @@ archives:
   - id: agent
     builds:
       - agent
-    format: tar.gz
+    formats: ["tar.gz"]
     strip_binary_directory: true
     name_template: '{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
     format_overrides:
       - goos: windows
-        format: zip
+        formats: ["zip"]
     files:
       - README.md
       - systemd/sleepy-agent.service
