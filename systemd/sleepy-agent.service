@@ -1,0 +1,28 @@
+[Unit]
+Description=Sleepy Agent
+Documentation=https://gitlab.com/CoiaPrant/Sleepy/
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Restart=always
+RestartSec=20s
+TasksMax=infinity
+LimitCPU=infinity
+LimitFSIZE=infinity
+LimitDATA=infinity
+LimitSTACK=infinity
+LimitCORE=infinity
+LimitRSS=infinity
+LimitNOFILE=infinity
+LimitAS=infinity
+LimitNPROC=infinity
+LimitSIGPENDING=infinity
+LimitMSGQUEUE=infinity
+LimitRTTIME=infinity
+WorkingDirectory=/opt/sleepy-agent
+ExecStart=/opt/sleepy-agent/sleepy-agent --api example.com:443 --secret example
+
+[Install]
+WantedBy=multi-user.target

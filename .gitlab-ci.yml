@@ -1,0 +1,131 @@
+stages:
+  - test
+  - build
+  - release
+
+test:
+  stage: test
+  image: golang:latest
+  variables:
+    GOCACHE: /tmp/go-build-cache
+    GOPATH: /tmp/go-cache
+    GOTOOLCHAIN: local
+    GIT_SUBMODULE_STRATEGY: recursive
+    GIT_DEPTH: 0
+    GIT_SUBMODULE_DEPTH: 0
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "push"
+  before_script:
+    # Go Cache
+    - sh -c 'mount -t tmpfs tmpfs /tmp || exit 0'
+    - mkdir -p $GOCACHE
+    - mkdir -p $GOPATH/src
+    # Link default GOPATH
+    - rm -rf /go
+    - ln -sf $GOPATH /go
+  script:
+    - go mod tidy -v
+    - go test ./cmd/sleepy-dashboard -v
+    - go test ./cmd/sleepy-agent -v
+
+build:ui:
+  stage: build
+  image:
+    name: node:latest
+    entrypoint: [""]
+  variables:
+    COREPACK_ENABLE_STRICT: 0
+    GIT_SUBMODULE_STRATEGY: recursive
+    GIT_DEPTH: 0
+    GIT_SUBMODULE_DEPTH: 0
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == "web"
+  artifacts:
+    paths:
+      - resources/ui
+    expire_in: 1 week
+  before_script:
+    # Node cache
+    - mkdir -p ui/node_modules
+    - sh -c 'mount -t tmpfs tmpfs ui/node_modules || exit 0'
+    # Install pnpm
+    - npm install -g pnpm
+  script:
+    - cd ui
+    - pnpm install
+    - pnpm release
+
+snapshot:
+  stage: release
+  dependencies:
+    - build:ui
+  image:
+    name: goreleaser/goreleaser:nightly
+    entrypoint: [""]
+  variables:
+    GOCACHE: /tmp/go-build-cache
+    GOPATH: /tmp/go-cache
+    GOTOOLCHAIN: local
+    GIT_SUBMODULE_STRATEGY: recursive
+    GIT_DEPTH: 0
+    GIT_SUBMODULE_DEPTH: 0
+    GITLAB_TOKEN: $CI_JOB_TOKEN
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+  artifacts:
+    paths:
+      - dist/*.tar.gz
+      - dist/config.yaml
+      - dist/checksums.txt
+    expire_in: 1 week
+  before_script:
+    # Go Cache
+    - sh -c 'mount -t tmpfs tmpfs /tmp || exit 0'
+    - mkdir -p $GOCACHE
+    - mkdir -p $GOPATH/src
+    # Link default GOPATH
+    - rm -rf /go
+    - ln -sf $GOPATH /go
+  script:
+    - goreleaser release --clean --skip docker --snapshot
+
+release:
+  stage: release
+  dependencies:
+    - build:ui
+  image:
+    name: goreleaser/goreleaser:nightly
+    entrypoint: [""]
+  services:
+    - name: docker:dind
+      alias: docker
+  variables:
+    GOCACHE: /tmp/go-build-cache
+    GOPATH: /tmp/go-cache
+    GOTOOLCHAIN: local
+    GIT_SUBMODULE_STRATEGY: recursive
+    GIT_DEPTH: 0
+    GIT_SUBMODULE_DEPTH: 0
+    GITLAB_TOKEN: $CI_JOB_TOKEN
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  rules:
+    - if: $CI_COMMIT_TAG
+  before_script:
+    # Go Cache
+    - sh -c 'mount -t tmpfs tmpfs /tmp || exit 0'
+    - mkdir -p $GOCACHE
+    - mkdir -p $GOPATH/src
+    # Link default GOPATH
+    - rm -rf /go
+    - ln -sf $GOPATH /go
+    # Login docker registry
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+    - docker run --privileged --rm tonistiigi/binfmt --install all
+  script:
+    - goreleaser release --clean

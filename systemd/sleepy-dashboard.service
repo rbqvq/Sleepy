@@ -1,0 +1,28 @@
+[Unit]
+Description=Sleepy Dashboard
+Documentation=https://gitlab.com/CoiaPrant/Sleepy/
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Restart=always
+RestartSec=20s
+TasksMax=infinity
+LimitCPU=infinity
+LimitFSIZE=infinity
+LimitDATA=infinity
+LimitSTACK=infinity
+LimitCORE=infinity
+LimitRSS=infinity
+LimitNOFILE=infinity
+LimitAS=infinity
+LimitNPROC=infinity
+LimitSIGPENDING=infinity
+LimitMSGQUEUE=infinity
+LimitRTTIME=infinity
+WorkingDirectory=/opt/sleepy-dashboard
+ExecStart=/opt/sleepy-dashboard/sleepy-dashboard --config config.json --log run.log
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,153 @@
+version: 2
+
+project_name: Sleepy
+
+gitlab_urls:
+  use_package_registry: true
+  use_job_token: true
+
+before:
+  hooks:
+    # Init submodule
+    - git submodule update --init
+    # Update go mod
+    - go mod tidy -v
+
+builds:
+  - id: dashboard
+    main: ./cmd/sleepy-dashboard
+    binary: sleepy-dashboard
+    tool: "go"
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{ .Version }} -X main.commit={{ .Commit }}
+      - -checklinkname=0
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+      - freebsd
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 7
+  - id: agent
+    main: ./cmd/sleepy-agent
+    binary: sleepy-agent
+    tool: "go"
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{ .Version }} -X main.commit={{ .Commit }}
+      - -checklinkname=0
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 7
+
+archives:
+  - id: dashboard
+    builds:
+      - dashboard
+    formats: ["tar.gz"]
+    strip_binary_directory: true
+    name_template: '{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
+    format_overrides:
+      - goos: windows
+        formats: ["zip"]
+    files:
+      - README.md
+      - systemd/sleepy-dashboard.service
+      - custom/*
+      - resources/*
+      - examples/dashboard/*
+  - id: agent
+    builds:
+      - agent
+    formats: ["tar.gz"]
+    strip_binary_directory: true
+    name_template: '{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
+    format_overrides:
+      - goos: windows
+        formats: ["zip"]
+    files:
+      - README.md
+      - systemd/sleepy-agent.service
+
+checksum:
+  name_template: "checksums.txt"
+  ids:
+    - dashboard
+    - agent
+
+release:
+  gitlab:
+    owner: CoiaPrant
+    name: Sleepy
+  ids:
+    - dashboard
+    - agent
+  mode: replace
+dockers:
+  - goos: linux
+    goarch: amd64
+    ids:
+      - dashboard
+    image_templates:
+      - "registry.gitlab.com/coiaprant/sleepy/dashboard:{{ .Tag }}-amd64"
+    dockerfile: "docker/dashboard/Dockerfile"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+      - "--label=org.opencontainers.image.title=Sleepy Dashboard"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--build-arg=platform=linux/amd64"
+      - "--platform=linux/amd64"
+    extra_files:
+      - custom
+      - examples/dashboard
+      - resources
+      - docker/dashboard
+  - goos: linux
+    goarch: arm64
+    ids:
+      - dashboard
+    image_templates:
+      - "registry.gitlab.com/coiaprant/sleepy/dashboard:{{ .Tag }}-arm64"
+    dockerfile: "docker/dashboard/Dockerfile"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+      - "--label=org.opencontainers.image.title=Sleepy Dashboard"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--build-arg=platform=linux/arm64/v8"
+      - "--platform=linux/arm64/v8"
+    extra_files:
+      - custom
+      - examples/dashboard
+      - resources
+      - docker/dashboard
+
+docker_manifests:
+  - name_template: "registry.gitlab.com/coiaprant/sleepy/dashboard:{{ .Tag }}"
+    image_templates:
+      - "registry.gitlab.com/coiaprant/sleepy/dashboard:{{ .Tag }}-amd64"
+      - "registry.gitlab.com/coiaprant/sleepy/dashboard:{{ .Tag }}-arm64"
+  - name_template: "registry.gitlab.com/coiaprant/sleepy/dashboard:latest"
+    image_templates:
+      - "registry.gitlab.com/coiaprant/sleepy/dashboard:{{ .Tag }}-amd64"
+      - "registry.gitlab.com/coiaprant/sleepy/dashboard:{{ .Tag }}-arm64"
