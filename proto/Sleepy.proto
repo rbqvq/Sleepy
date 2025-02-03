@@ -1,0 +1,31 @@
+syntax = "proto3";
+package proto;
+
+option go_package = "./proto";
+
+message Device {
+    uint64 report_interval = 1;
+    repeated string device_type = 2;
+    string device_platform = 3;
+    string device_name = 4;
+}
+
+message RegisterResponse {
+    bool ok = 1;
+    string session = 2;
+    string msg = 3;
+}
+
+message State {
+    bool using = 1;
+    string app_name = 2;
+}
+
+message Empty{}
+
+service Sleepy {
+    rpc RegisterDevice(Device)returns(RegisterResponse){}
+    rpc Unregister(Empty)returns(Empty){}
+
+    rpc ReportDeviceState(State)returns(Empty){}
+}

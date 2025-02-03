@@ -1,0 +1,13 @@
+{
+    "Web": {
+        "Type": "unix",
+        "Listen": "/run/sleepy-dashboard.sock"
+    },
+    "Security": {
+        "AllowCORS": false,
+        "Secret": "PUT_YOUR_AGENT_SECRET_HERE"
+    },
+    "System": {
+        "DebugMode": false
+    }
+}

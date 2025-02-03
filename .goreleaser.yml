@@ -1,0 +1,102 @@
+version: 2
+
+project_name: Sleepy
+
+gitlab_urls:
+  use_package_registry: true
+  use_job_token: true
+
+before:
+  hooks:
+    # Init submodule
+    - git submodule update --init
+    # Update go mod
+    - go mod tidy -v
+
+builds:
+  - id: dashboard
+    main: ./cmd/sleepy-dashboard
+    binary: sleepy-dashboard
+    gobinary: "go"
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{ .Version }} -X main.commit={{ .Commit }}
+      - -checklinkname=0
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+      - freebsd
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 7
+  - id: agent
+    main: ./cmd/sleepy-agent
+    binary: sleepy-agent
+    gobinary: "go"
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{ .Version }} -X main.commit={{ .Commit }}
+      - -checklinkname=0
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 7
+
+archives:
+  - id: dashboard
+    builds:
+      - dashboard
+    format: tar.gz
+    strip_binary_directory: true
+    name_template: '{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - systemd/sleepy-dashboard.service
+      - custom/*
+      - resources/*
+      - examples/dashboard/*
+  - id: agent
+    builds:
+      - agent
+    format: tar.gz
+    strip_binary_directory: true
+    name_template: '{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - systemd/sleepy-agent.service
+
+checksum:
+  name_template: "checksums.txt"
+  ids:
+    - dashboard
+    - agent
+
+release:
+  gitlab:
+    owner: CoiaPrant
+    name: Sleepy
+  ids:
+    - dashboard
+    - agent
+  mode: replace

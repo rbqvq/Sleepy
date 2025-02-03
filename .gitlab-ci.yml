@@ -1,0 +1,124 @@
+stages:
+  - test
+  - build
+  - release
+
+test:
+  stage: test
+  image: golang:latest
+  variables:
+    GOCACHE: /tmp/go-build-cache
+    GOPATH: /tmp/go-cache
+    GOTOOLCHAIN: local
+    GIT_SUBMODULE_STRATEGY: recursive
+    GIT_DEPTH: 0
+    GIT_SUBMODULE_DEPTH: 0
+  only:
+    refs:
+      - pushes
+      - tags
+  before_script:
+    # Go Cache
+    - sh -c 'mount -t tmpfs tmpfs /tmp || exit 0'
+    - mkdir -p $GOCACHE
+    - mkdir -p $GOPATH/src
+    # Link default GOPATH
+    - rm -rf /go
+    - ln -sf $GOPATH /go
+  script:
+    - go mod tidy -v
+    - go test ./cmd/sleepy-dashboard -v
+    - go test ./cmd/sleepy-agent -v
+
+build:ui:
+  stage: build
+  image:
+    name: node:latest
+    entrypoint: [""]
+  variables:
+    COREPACK_ENABLE_STRICT: 0
+    GIT_SUBMODULE_STRATEGY: recursive
+    GIT_DEPTH: 0
+    GIT_SUBMODULE_DEPTH: 0
+  only:
+    refs:
+      - web
+      - tags
+  artifacts:
+    paths:
+      - resources/ui
+    expire_in: 1 week
+  before_script:
+    # Node cache
+    - mkdir -p ui/node_modules
+    - sh -c 'mount -t tmpfs tmpfs ui/node_modules || exit 0'
+    # Install pnpm
+    - npm install -g pnpm
+  script:
+    - cd ui
+    - pnpm install
+    - pnpm release
+
+snapshot:
+  stage: release
+  dependencies:
+    - build:ui
+  image:
+    name: goreleaser/goreleaser:nightly
+    entrypoint: [""]
+  variables:
+    GOCACHE: /tmp/go-build-cache
+    GOPATH: /tmp/go-cache
+    GOTOOLCHAIN: local
+    GIT_SUBMODULE_STRATEGY: recursive
+    GIT_DEPTH: 0
+    GIT_SUBMODULE_DEPTH: 0
+    GITLAB_TOKEN: $CI_JOB_TOKEN
+  only:
+    refs:
+      - web
+  artifacts:
+    paths:
+      - dist/*.tar.gz
+      - dist/config.yaml
+      - dist/checksums.txt
+    expire_in: 1 week
+  before_script:
+    # Go Cache
+    - sh -c 'mount -t tmpfs tmpfs /tmp || exit 0'
+    - mkdir -p $GOCACHE
+    - mkdir -p $GOPATH/src
+    # Link default GOPATH
+    - rm -rf /go
+    - ln -sf $GOPATH /go
+  script:
+    - goreleaser release --clean --snapshot
+
+release:
+  stage: release
+  dependencies:
+    - build:ui
+  image:
+    name: goreleaser/goreleaser:nightly
+    entrypoint: [""]
+  variables:
+    GOCACHE: /tmp/go-build-cache
+    GOPATH: /tmp/go-cache
+    GOTOOLCHAIN: local
+    GIT_SUBMODULE_STRATEGY: recursive
+    GIT_DEPTH: 0
+    GIT_SUBMODULE_DEPTH: 0
+    GITLAB_TOKEN: $CI_JOB_TOKEN
+  only:
+    refs:
+      - tags
+  before_script:
+    # Go Cache
+    - sh -c 'mount -t tmpfs tmpfs /tmp || exit 0'
+    - mkdir -p $GOCACHE
+    - mkdir -p $GOPATH/src
+    # Link default GOPATH
+    - rm -rf /go
+    - ln -sf $GOPATH /go
+  script:
+    - goreleaser release --clean

@@ -1,0 +1,15 @@
+{
+    "Web": {
+        "Type": "tcp",
+        "Listen": ":443",
+        "Cert": "cert.pem",
+        "Key": "private.key"
+    },
+    "Security": {
+        "AllowCORS": false,
+        "Secret": "PUT_YOUR_AGENT_SECRET_HERE"
+    },
+    "System": {
+        "DebugMode": false
+    }
+}
