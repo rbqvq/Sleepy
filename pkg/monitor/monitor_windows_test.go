@@ -19,6 +19,6 @@ func TestGetDeviceState(t *testing.T) {
 		return
 	}
 
-	t.Logf("device forceground app name: %s", appName)
+	t.Logf("device foreground app name: %s", appName)
 
 }
