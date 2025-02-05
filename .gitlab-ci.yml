@@ -16,7 +16,6 @@ test:
   only:
     refs:
       - pushes
-      - tags
   before_script:
     # Go Cache
     - sh -c 'mount -t tmpfs tmpfs /tmp || exit 0'
