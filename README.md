@@ -17,9 +17,7 @@
 
 ## How to use?
 
-去 [GitLab Releases](https://gitlab.com/CoiaPrant/Sleepy/-/releases) 下载
-
-懒得写这部分, 自己摸索一下, 有没有人发PR (x
+详情见 docs 目录
 
 ## Contribute
 
