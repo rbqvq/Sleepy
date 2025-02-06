@@ -33,6 +33,6 @@ func Status(c *gin.Context) {
 			}
 		}
 
-		time.Sleep(time.Second)
+		time.Sleep(REFRESH_INTERVAL)
 	}
 }

@@ -6,6 +6,7 @@ import (
 
 	. "gitlab.com/CoiaPrant/Sleepy/common/server"
 	"gitlab.com/CoiaPrant/Sleepy/router/api"
+	"gitlab.com/CoiaPrant/Sleepy/router/compatible"
 	"gitlab.com/CoiaPrant/Sleepy/router/handlers"
 	"gitlab.com/CoiaPrant/Sleepy/router/websocket"
 
@@ -92,6 +93,16 @@ func NewServer() *gin.Engine {
 
 		// NoMethod
 		handlers.NoMethod.Add("/api", NoCache, api.NoMethod)
+	}
+
+	{
+		// Compatible for python editon
+		router := router.Group("")
+
+		router.GET("/status_list", compatible.StatusList)
+		router.GET("/get/status_list", compatible.StatusList)
+
+		router.GET("/query", compatible.Status)
 	}
 
 	router.NoRoute(handlers.NoRoute.Handlers()...)
