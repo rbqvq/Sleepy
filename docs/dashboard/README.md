@@ -2,6 +2,8 @@
 
 ## 部署
 
+- `Deploy.Koyeb` Koyeb 平台免费部署
+
 ### Linux
 
 #### 安装
