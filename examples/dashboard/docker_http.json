@@ -1,0 +1,13 @@
+{
+    "Web": {
+        "Type": "tcp",
+        "Listen": ":80"
+    },
+    "Security": {
+        "AllowCORS": false,
+        "Secret": "PUT_YOUR_AGENT_SECRET_HERE"
+    },
+    "System": {
+        "DebugMode": false
+    }
+}

@@ -100,3 +100,54 @@ release:
     - dashboard
     - agent
   mode: replace
+dockers:
+  - goos: linux
+    goarch: amd64
+    ids:
+      - dashboard
+    image_templates:
+      - "registry.gitlab.com/coiaprant/sleepy/dashboard:{{ .Tag }}-amd64"
+    dockerfile: "docker/dashboard/Dockerfile"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+      - "--label=org.opencontainers.image.title=Sleepy Dashboard"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--build-arg=platform=linux/amd64"
+      - "--platform=linux/amd64"
+    extra_files:
+      - custom
+      - examples/dashboard
+      - resources
+      - docker/dashboard
+  - goos: linux
+    goarch: arm64
+    ids:
+      - dashboard
+    image_templates:
+      - "registry.gitlab.com/coiaprant/sleepy/dashboard:{{ .Tag }}-arm64"
+    dockerfile: "docker/dashboard/Dockerfile"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+      - "--label=org.opencontainers.image.title=Sleepy Dashboard"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--build-arg=platform=linux/arm64/v8"
+      - "--platform=linux/arm64/v8"
+    extra_files:
+      - custom
+      - examples/dashboard
+      - resources
+      - docker/dashboard
+
+docker_manifests:
+  - name_template: "registry.gitlab.com/coiaprant/sleepy/dashboard:{{ .Tag }}"
+    image_templates:
+      - "registry.gitlab.com/coiaprant/sleepy/dashboard:{{ .Tag }}-amd64"
+      - "registry.gitlab.com/coiaprant/sleepy/dashboard:{{ .Tag }}-arm64"
+  - name_template: "registry.gitlab.com/coiaprant/sleepy/dashboard:latest"
+    image_templates:
+      - "registry.gitlab.com/coiaprant/sleepy/dashboard:{{ .Tag }}-amd64"
+      - "registry.gitlab.com/coiaprant/sleepy/dashboard:{{ .Tag }}-arm64"

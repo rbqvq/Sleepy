@@ -91,7 +91,7 @@ snapshot:
     - rm -rf /go
     - ln -sf $GOPATH /go
   script:
-    - goreleaser release --clean --snapshot
+    - goreleaser release --clean --skip docker --snapshot
 
 release:
   stage: release
@@ -100,6 +100,9 @@ release:
   image:
     name: goreleaser/goreleaser:nightly
     entrypoint: [""]
+  services:
+    - name: docker:dind
+      alias: docker
   variables:
     GOCACHE: /tmp/go-build-cache
     GOPATH: /tmp/go-cache
@@ -108,6 +111,9 @@ release:
     GIT_DEPTH: 0
     GIT_SUBMODULE_DEPTH: 0
     GITLAB_TOKEN: $CI_JOB_TOKEN
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
   only:
     refs:
       - tags
@@ -119,5 +125,8 @@ release:
     # Link default GOPATH
     - rm -rf /go
     - ln -sf $GOPATH /go
+    # Login docker registry
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+    - docker run --privileged --rm tonistiigi/binfmt --install all
   script:
     - goreleaser release --clean
