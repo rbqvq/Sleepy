@@ -11,10 +11,10 @@ require (
 	gitlab.com/CoiaPrant/clog v0.0.0-20240125121733-757221e3362e
 	gitlab.com/go-extension/grpc v0.0.0-20250213135743-c5c53044e202
 	gitlab.com/go-extension/rand v0.0.0-20240303103951-707937a049b5
-	gitlab.com/go-extension/tlsfinger v0.0.0-20250213182327-5ccff27338ec
+	gitlab.com/go-extension/tlsfinger v0.0.0-20250717081640-95d6863fc0d8
 	golang.org/x/net v0.42.0
 	golang.org/x/sys v0.34.0
-	google.golang.org/grpc v1.73.0
+	google.golang.org/grpc v1.74.0
 	google.golang.org/protobuf v1.36.6
 )
 
@@ -36,7 +36,7 @@ require (
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.11 // indirect
+	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20250317134145-8bc96cf8fc35 // indirect
@@ -56,10 +56,10 @@ require (
 	gitlab.com/go-extension/aes-ccm v0.0.0-20230221065045-e58665ef23c7 // indirect
 	gitlab.com/go-extension/hpke v0.0.0-20250212195157-716075a00b8a // indirect
 	gitlab.com/go-extension/mlkem768 v0.0.0-20240814071630-937354a2177e // indirect
-	gitlab.com/go-extension/tls v0.0.0-20250621114934-08a32ddfd9e3 // indirect
+	gitlab.com/go-extension/tls v0.0.0-20250717081447-b6af860c469b // indirect
 	golang.org/x/arch v0.19.0 // indirect
 	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250715232539-7130f93afb79 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
