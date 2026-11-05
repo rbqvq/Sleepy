@@ -5,8 +5,8 @@ import (
 
 	"gitlab.com/CoiaPrant/Sleepy/model"
 	pb "gitlab.com/CoiaPrant/Sleepy/proto"
-	"gitlab.com/CoiaPrant/Sleepy/utils"
 	"gitlab.com/CoiaPrant/cache2go"
+	"gitlab.com/CoiaPrant/lib/rand"
 )
 
 var (
@@ -43,9 +43,9 @@ func AddDevice(dev *pb.Device) (session_id string) {
 		Timestamp:      time.Now().Unix(),
 	}
 
-	session_id = utils.GetString(20)
+	session_id = rand.String(20)
 	for !devices.NotFoundAdd(session_id, lifeSpan, device) {
-		session_id = utils.GetString(20)
+		session_id = rand.String(20)
 	}
 
 	return
