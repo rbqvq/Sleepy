@@ -43,9 +43,9 @@ func CheckSession(ctx context.Context) (*model.Device, error) {
 	}
 	session_id := value[0]
 
-	device, err := device.GetDevice(session_id)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, err.Error())
+	device, ok := device.GetDevice(session_id)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "session not found")
 	}
 
 	return device, nil

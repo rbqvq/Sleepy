@@ -11,20 +11,22 @@ import (
 )
 
 func init() {
-	go func() {
-		ln, err := net.ListenTCP("tcp", nil)
-		if err != nil {
-			clog.Errorf("[Debug] Failed to listen pprof, error: %s", err)
-			return
-		}
-		defer ln.Close()
+	go serveDebug()
+}
 
-		clog.Infof("[Debug] Listening pprof on %s", ln.Addr())
+func serveDebug() {
+	ln, err := net.ListenTCP("tcp", nil)
+	if err != nil {
+		clog.Errorf("[Debug] Failed to listen pprof, error: %s", err)
+		return
+	}
+	defer ln.Close()
 
-		err = http.Serve(ln, nil)
-		if err != nil {
-			clog.Errorf("[Debug] Failed to serve pprof, error: %s", err)
-			return
-		}
-	}()
+	clog.Infof("[Debug] Listening pprof on %s", ln.Addr())
+
+	err = http.Serve(ln, nil)
+	if err != nil {
+		clog.Errorf("[Debug] Failed to serve pprof, error: %s", err)
+		return
+	}
 }

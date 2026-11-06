@@ -9,33 +9,26 @@ import (
 	"gitlab.com/CoiaPrant/lib/rand"
 )
 
-var (
-	devices = cache2go.CacheOf[string, *model.Device]()
-)
+const defaultDeviceTTL = 20 * time.Second
+
+var devices = cache2go.NewSlidingCache[string, *model.Device]()
 
 func ListDevices() map[string]*model.Device {
-	var devs = make(map[string]*model.Device)
-	devices.Foreach(func(session_id string, item *cache2go.CacheItemOf[string, *model.Device]) {
-		devs[session_id] = item.Data()
+	var ret = make(map[string]*model.Device, devices.Size())
+	devices.Range(func(session_id string, device *model.Device) (bool, bool) {
+		ret[session_id] = device
+		return false, false
 	})
-	return devs
+
+	return ret
 }
 
-func GetDevice(session_id string) (*model.Device, error) {
-	item, err := devices.Value(session_id)
-	if err != nil {
-		return nil, err
-	}
-
-	return item.Data(), nil
+func GetDevice(session_id string) (*model.Device, bool) {
+	return devices.Touch(session_id)
 }
 
 func AddDevice(dev *pb.Device) (session_id string) {
-	var lifeSpan = 20 * time.Second
-	if deviceLifeSpan := time.Duration(dev.ReportInterval * 3); deviceLifeSpan > lifeSpan {
-		lifeSpan = deviceLifeSpan
-	}
-
+	ttl := max(defaultDeviceTTL, time.Duration(3*dev.ReportInterval))
 	device := &model.Device{
 		DeviceType:     dev.DeviceType,
 		DevicePlatform: dev.DevicePlatform,
@@ -43,12 +36,14 @@ func AddDevice(dev *pb.Device) (session_id string) {
 		Timestamp:      time.Now().Unix(),
 	}
 
-	session_id = rand.String(20)
-	for !devices.NotFoundAdd(session_id, lifeSpan, device) {
+	for {
 		session_id = rand.String(20)
-	}
 
-	return
+		_, loaded := devices.LoadOrStore(session_id, device, ttl)
+		if !loaded {
+			return
+		}
+	}
 }
 
 func RemoveDevice(session_id string) {

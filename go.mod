@@ -7,8 +7,8 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/shirou/gopsutil/v4 v4.26.5
-	gitlab.com/CoiaPrant/cache2go v0.0.0-20240325160109-49e77b656916
-	gitlab.com/CoiaPrant/clog v0.0.0-20260917111546-0ef70829bd8b
+	gitlab.com/CoiaPrant/cache2go v0.0.0-20261106145313-b8e48894c611
+	gitlab.com/CoiaPrant/clog v0.0.0-20261106120049-188cd4340bc7
 	gitlab.com/CoiaPrant/lib v0.0.0-20261105195528-5578842be3c7
 	gitlab.com/go-extension/grpc v0.0.0-20260414185609-5c2d42c9b3f4
 	gitlab.com/go-extension/tlsfinger v0.0.0-20260428214456-efa819b4730c
@@ -50,6 +50,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.4.3 // indirect
 	github.com/pmorjan/kmod v1.1.1 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
+	github.com/puzpuzpuz/xsync/v4 v4.5.0 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.65.0 // indirect
 	github.com/tklauser/go-sysconf v0.4.0 // indirect
