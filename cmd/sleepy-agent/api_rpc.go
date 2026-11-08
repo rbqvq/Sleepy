@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -17,40 +18,19 @@ import (
 )
 
 type gRPClient struct {
+	conn    *grpc.ClientConn
 	client  pb.SleepyClient
 	session string
 
-	ctx  context.Context
-	done context.CancelCauseFunc
+	ctx    context.Context
+	cancel context.CancelCauseFunc
 }
 
-func NewGoogleRPClient() (*gRPClient, error) {
-	c := new(gRPClient)
-
-	credential := grpc.WithTransportCredentials(credentials.NewTLS(TLSConfig))
-	conn, err := grpc.NewClient(rpcAddress,
-		credential,
-		grpc.WithPerRPCCredentials(&gRPC_Session{
-			Session: &c.session,
-		}),
-	)
-	if err != nil {
-		clog.Errorf("[gRPC API Client] connect failed, error: %s", err)
-		return nil, err
+func (c *gRPClient) done(err error) {
+	c.cancel(err)
+	if !errors.Is(c.ctx.Err(), context.Canceled) {
+		c.conn.Close()
 	}
-
-	c.client = pb.NewSleepyClient(conn)
-	c.ctx, c.done = contextHelper.WithCancelCause(context.Background())
-
-	err = c.registerDevice()
-	if err != nil {
-		clog.Errorf("[gRPC API Client] Register failed, error: %s", err)
-		return nil, err
-	}
-	clog.Infof("[gRPC API Client] Register success")
-
-	go c.reportDeviceState()
-	return c, nil
 }
 
 func (c *gRPClient) registerDevice() error {
@@ -114,7 +94,7 @@ func (c *gRPClient) Wait() error {
 }
 
 func (c *gRPClient) Unregister() (err error) {
-	c.done(nil)
+	c.cancel(nil)
 
 	_, err = c.client.Unregister(context.Background(), &pb.Empty{})
 	if err != nil {
@@ -124,4 +104,34 @@ func (c *gRPClient) Unregister() (err error) {
 
 	clog.Successf("[gRPC API Client] Unregister successfully")
 	return
+}
+
+func NewGoogleRPClient() (*gRPClient, error) {
+	c := new(gRPClient)
+
+	credential := grpc.WithTransportCredentials(credentials.NewTLS(TLSConfig))
+	conn, err := grpc.NewClient(rpcAddress,
+		credential,
+		grpc.WithPerRPCCredentials(&gRPC_Session{
+			Session: &c.session,
+		}),
+	)
+	if err != nil {
+		clog.Errorf("[gRPC API Client] connect failed, error: %s", err)
+		return nil, err
+	}
+
+	c.conn = conn
+	c.client = pb.NewSleepyClient(conn)
+	c.ctx, c.cancel = contextHelper.WithCancelCause(context.Background())
+
+	err = c.registerDevice()
+	if err != nil {
+		clog.Errorf("[gRPC API Client] Register failed, error: %s", err)
+		return nil, err
+	}
+	clog.Infof("[gRPC API Client] Register success")
+
+	go c.reportDeviceState()
+	return c, nil
 }
