@@ -7,11 +7,8 @@ import (
 	"time"
 
 	. "gitlab.com/CoiaPrant/Sleepy/common"
-
-	contextHelper "gitlab.com/CoiaPrant/Sleepy/pkg/context"
 	"gitlab.com/CoiaPrant/Sleepy/pkg/monitor"
 	pb "gitlab.com/CoiaPrant/Sleepy/proto"
-
 	"gitlab.com/CoiaPrant/clog"
 	"gitlab.com/go-extension/grpc/credentials"
 	"google.golang.org/grpc"
@@ -123,7 +120,7 @@ func NewGoogleRPClient() (*gRPClient, error) {
 
 	c.conn = conn
 	c.client = pb.NewSleepyClient(conn)
-	c.ctx, c.cancel = contextHelper.WithCancelCause(context.Background())
+	c.ctx, c.cancel = libcontext.WithCancelCause(context.Background())
 
 	err = c.registerDevice()
 	if err != nil {
