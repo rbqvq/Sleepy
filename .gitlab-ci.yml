@@ -27,9 +27,7 @@ test:
     - rm -rf /go
     - ln -sf $GOPATH /go
   script:
-    - go mod tidy -v
-    - go test ./cmd/sleepy-dashboard -v
-    - go test ./cmd/sleepy-agent -v
+    - go test ./... -v
 
 build:ui:
   stage: build
